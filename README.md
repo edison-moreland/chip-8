@@ -14,7 +14,8 @@ Another Chip-8 implementation, woo! 🎉
   - [x] Divide canvas into "pixels"
     - [ ] With support for multiple resolutions
   - [x] Draw to canvas from Rust
-  - [ ] Draw sprites to canvas
+  - [x] Draw sprites to canvas
+    - [x] With collision detection
 - [ ] Sound
 - [ ] System
   - [ ] Timers/Delays

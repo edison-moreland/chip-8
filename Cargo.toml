@@ -16,9 +16,6 @@ crate-type = ["cdylib"]
 lto = true
 
 [dependencies]
-#  its 5am I jsut nee dthis to work
-bit_reverse = "0.1.8"
-
 # The `wasm-bindgen` crate provides the bare minimum functionality needed
 # to interact with JavaScript.
 wasm-bindgen = "0.2.45"
