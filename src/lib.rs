@@ -9,41 +9,76 @@ use crate::screen::{
 };
 
 use wasm_bindgen::prelude::*;
-//use web_sys::console;
 
 
-// This is like the `main` function, except for JavaScript.
+use std::cell::RefCell;
+use std::rc::Rc;
+use wasm_bindgen::JsCast;
+
+fn window() -> web_sys::Window {
+    web_sys::window().expect("no global `window` exists")
+}
+
+fn request_animation_frame(f: &Closure<dyn FnMut()>) {
+    window()
+        .request_animation_frame(f.as_ref().unchecked_ref())
+        .expect("should register `requestAnimationFrame` OK");
+}
+
+
+// This function is automatically invoked after the wasm module is instantiated.
 #[wasm_bindgen(start)]
-pub fn main_js(){
-    // This provides better error messages in debug mode.
-    // It's disabled in release mode so it doesn't bloat up the file size.
-    #[cfg(debug_assertions)]
-    console_error_panic_hook::set_once();
+pub fn run() -> Result<(), JsValue> {
+    // https://rustwasm.github.io/wasm-bindgen/examples/request-animation-frame.html
 
 
-    // Draw a checkerboard
+    // Here we want to call `requestAnimationFrame` in a loop, but only a fixed
+    // number of times. After it's done we want all our resources cleaned up. To
+    // achieve this we're using an `Rc`. The `Rc` will eventually store the
+    // closure we want to execute on each frame, but to start out it contains
+    // `None`.
+    //
+    // After the `Rc` is made we'll actually create the closure, and the closure
+    // will reference one of the `Rc` instances. The other `Rc` reference is
+    // used to store the closure, request the first frame, and then is dropped
+    // by this function.
+    //
+    // Inside the closure we've got a persistent `Rc` reference, which we use
+    // for all future iterations of the loop
+    let f = Rc::new(RefCell::new(None));
+    let g = f.clone();
+
+    // Animation test with sprites
     let mut screen = Screen::new_empty();
     let grid = Canvas::new(4, "canvas");
 
-    // Sprite test
-    for i in 0..16 {
-        // Construct sprite slice
-        let sprite_offset = screen::character_offset(i);
-        let sprite = &screen::CHIP8_FONT[sprite_offset..sprite_offset+5];
+    // Construct sprite slice
+    let sprite_offset = screen::character_offset(3) as usize;
+    let sprite = &screen::CHIP8_FONT[sprite_offset..sprite_offset+5];
 
-        // If character leaves the screen, knock it down a line
-        let mut x = i*8;
-        let y;
-        if x > 56 {
-            x -= 64;
-            y = 5;
-        } else {
-            y = 0;
-        }
-
-        screen.write_sprite(x as usize, y, sprite);
-    }
-
+    // Write first frame
+    screen.write_sprite(0, 0, &sprite);
     grid.draw_grid(&screen.as_raw());
 
+    let mut i = 1;
+    *g.borrow_mut() = Some(Closure::wrap(Box::new(move || {
+        if i > 64 {
+            i = 1
+        }
+
+        // Erase previus sprite, write the next sprite
+        screen.write_sprite(i-1, 0, &sprite);
+        screen.write_sprite(i, 0, &sprite);
+        
+        // Flush to canvas
+        grid.draw_grid(&screen.as_raw());
+
+        i += 1;
+
+        // Schedule ourself for another requestAnimationFrame callback.
+        request_animation_frame(f.borrow().as_ref().unwrap());
+    }) as Box<dyn FnMut()>));
+
+    request_animation_frame(g.borrow().as_ref().unwrap());
+    Ok(())
 }
