@@ -17,7 +17,9 @@ Another Chip-8 implementation, woo! 🎉
   - [x] Draw sprites to canvas
     - [x] With collision detection
 - [x] Keyboard
-- [ ] Sound
+- [ ] Timers
+  - [ ] Sounds (w/buzzer)
+  - [ ] Delay
 - [ ] System
   - [ ] Timers/Delays
   - [ ] Emulation loop MVP
@@ -38,6 +40,7 @@ Two reasons I'm building this:
 - [CHIP-8 Documentation - trapexit; "A collection of documentation on the CHIP-8 and related"](https://github.com/trapexit/chip-8_documentation)
 - [CHIP8; A CHIP-8 / SCHIP emulator - David Winter](http://vanbeveren.byethost13.com/stuff/CHIP8.pdf?i=1)
 - [HP48-Superchip - Chromatophore](https://github.com/Chromatophore/HP48-Superchip)
+- [(SUPER)CHIP 8 Secrets - Petr Kratina](https://github.com/AfBu/haxe-chip-8-emulator/wiki/(Super)CHIP-8-Secrets)
 
 
 ## Quirks and Extensions
