@@ -8,12 +8,18 @@ use crate::screen::{
     Screen
 };
 
+mod keyboard;
+use crate::keyboard::{
+    Keyboard
+};
+
 use wasm_bindgen::prelude::*;
 
 
 use std::cell::RefCell;
 use std::rc::Rc;
 use wasm_bindgen::JsCast;
+use web_sys::console;
 
 fn window() -> web_sys::Window {
     web_sys::window().expect("no global `window` exists")
@@ -48,32 +54,47 @@ pub fn run() -> Result<(), JsValue> {
     let f = Rc::new(RefCell::new(None));
     let g = f.clone();
 
-    // Animation test with sprites
+    // Keyboard and sprites test
     let mut screen = Screen::new_empty();
-    let grid = Canvas::new(4, "canvas");
+    let grid = Canvas::new(12, "canvas");
 
-    // Construct sprite slice
-    let sprite_offset = screen::character_offset(3) as usize;
-    let sprite = &screen::CHIP8_FONT[sprite_offset..sprite_offset+5];
 
-    // Write first frame
-    screen.write_sprite(0, 0, &sprite);
-    grid.draw_grid(&screen.as_raw());
 
-    let mut i = 1;
+    // // Write first frame
+    // screen.write_sprite(0, 0, &sprite);
+    // grid.draw_grid(&screen.as_raw());
+
+    let keyboard = Keyboard::new();
+    let mut previous_key: i8 = -1;
+
+    //let mut i = 1;
     *g.borrow_mut() = Some(Closure::wrap(Box::new(move || {
-        if i > 64 {
-            i = 1
+        let pressed_key = keyboard.key_pressed();
+        if pressed_key == previous_key {
+            // Schedule another frame and bounce
+            request_animation_frame(f.borrow().as_ref().unwrap());
+            return;
         }
 
-        // Erase previus sprite, write the next sprite
-        screen.write_sprite(i-1, 0, &sprite);
-        screen.write_sprite(i, 0, &sprite);
-        
-        // Flush to canvas
-        grid.draw_grid(&screen.as_raw());
+        // Step 1, erase previous sprite
+        if previous_key != -1 {
+            // Construct sprite slice
+            let sprite_offset = screen::character_offset(previous_key as u16) as usize;
+            let sprite = &screen::CHIP8_FONT[sprite_offset..sprite_offset+5];
+            screen.write_sprite(0, 0, &sprite);
+        }
 
-        i += 1;
+        if pressed_key != -1 {
+            // Step 2, write new sprite
+            // Construct sprite slice
+            let sprite_offset = screen::character_offset(pressed_key as u16) as usize;
+            let sprite = &screen::CHIP8_FONT[sprite_offset..sprite_offset+5];
+            screen.write_sprite(0, 0, &sprite);
+            
+            // Flush to canvas
+            grid.draw_grid(&screen.as_raw());
+        }
+        previous_key = pressed_key;
 
         // Schedule ourself for another requestAnimationFrame callback.
         request_animation_frame(f.borrow().as_ref().unwrap());
