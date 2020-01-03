@@ -16,7 +16,7 @@ Another Chip-8 implementation, woo! 🎉
   - [x] Draw to canvas from Rust
   - [x] Draw sprites to canvas
     - [x] With collision detection
-- [ ] Keyboard
+- [x] Keyboard
 - [ ] Sound
 - [ ] System
   - [ ] Timers/Delays
