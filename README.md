@@ -17,7 +17,7 @@ Another Chip-8 implementation, woo! 🎉
   - [x] Draw sprites to canvas
     - [x] With collision detection
 - [x] Keyboard
-- [ ] Timers
+- [X] Timers
   - [ ] Sounds (w/buzzer)
   - [ ] Delay
 - [ ] System

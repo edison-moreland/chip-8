@@ -13,6 +13,12 @@ use crate::keyboard::{
     Keyboard
 };
 
+
+mod timer;
+use crate::timer::{
+    Timer
+};
+
 use wasm_bindgen::prelude::*;
 
 
@@ -56,18 +62,14 @@ pub fn run() -> Result<(), JsValue> {
 
     // Keyboard and sprites test
     let mut screen = Screen::new_empty();
+    
     let grid = Canvas::new(12, "canvas");
 
-
-
-    // // Write first frame
-    // screen.write_sprite(0, 0, &sprite);
-    // grid.draw_grid(&screen.as_raw());
-
     let keyboard = Keyboard::new();
-    let mut previous_key: i8 = -1;
 
-    //let mut i = 1;
+    let timer = Timer::new(500.0);
+
+    let mut previous_key: i8 = -1;
     *g.borrow_mut() = Some(Closure::wrap(Box::new(move || {
         let pressed_key = keyboard.key_pressed();
         if pressed_key == previous_key {
@@ -95,6 +97,9 @@ pub fn run() -> Result<(), JsValue> {
             grid.draw_grid(&screen.as_raw());
         }
         previous_key = pressed_key;
+
+        let ticks = timer.ticks_passed();
+        console::log_1(&JsValue::from_f64(ticks as f64));
 
         // Schedule ourself for another requestAnimationFrame callback.
         request_animation_frame(f.borrow().as_ref().unwrap());
