@@ -20,6 +20,21 @@ lto = true
 # to interact with JavaScript.
 wasm-bindgen = "0.2.45"
 
+# The `console_error_panic_hook` crate provides better debugging of panics by
+# logging them with `console.error`. This is great for development, but requires
+# all the `std::fmt` and `std::panicking` infrastructure, so it's only enabled
+# in debug mode.
+console_error_panic_hook = "0.1.5"
+
+
+# Used to embed binaries during compilation
+[dependencies.rust-embed]
+version = "5.2.0"
+features = [
+    "debug-embed"
+]
+
+
 # The `web-sys` crate allows you to interact with the various browser APIs,
 # like the DOM.
 [dependencies.web-sys]
@@ -32,13 +47,6 @@ features = [
     "HtmlCanvasElement",
     "CanvasRenderingContext2d"
 ]
-
-# The `console_error_panic_hook` crate provides better debugging of panics by
-# logging them with `console.error`. This is great for development, but requires
-# all the `std::fmt` and `std::panicking` infrastructure, so it's only enabled
-# in debug mode.
-[target."cfg(debug_assertions)".dependencies]
-console_error_panic_hook = "0.1.5"
 
 # These crates are used for running unit tests.
 [dev-dependencies]

@@ -21,11 +21,17 @@ use crate::timer::{
 
 use wasm_bindgen::prelude::*;
 
-
 use std::cell::RefCell;
 use std::rc::Rc;
 use wasm_bindgen::JsCast;
 use web_sys::console;
+
+#[macro_use]
+extern crate rust_embed;
+
+#[derive(RustEmbed)]
+#[folder = "static/roms/"]
+struct Asset;
 
 fn window() -> web_sys::Window {
     web_sys::window().expect("no global `window` exists")
@@ -42,7 +48,8 @@ fn request_animation_frame(f: &Closure<dyn FnMut()>) {
 #[wasm_bindgen(start)]
 pub fn run() -> Result<(), JsValue> {
     // https://rustwasm.github.io/wasm-bindgen/examples/request-animation-frame.html
-
+    let test_rom = Asset::get("test_opcode.ch8").expect("Could not get ROM");
+    console::log_1(&JsValue::from_f64(test_rom[0] as f64));
 
     // Here we want to call `requestAnimationFrame` in a loop, but only a fixed
     // number of times. After it's done we want all our resources cleaned up. To
