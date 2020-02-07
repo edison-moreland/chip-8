@@ -1,29 +1,21 @@
 mod canvas_grid;
-use crate::canvas_grid::{
-    Canvas
-};
+use crate::canvas_grid::Canvas;
 
 mod screen;
-use crate::screen::{
-    Screen
-};
+use crate::screen::Screen;
 
 mod keyboard;
-use crate::keyboard::{
-    Keyboard
-};
-
+use crate::keyboard::Keyboard;
 
 mod timer;
-use crate::timer::{
-    Timer
-};
+use crate::timer::Timer;
 
 use wasm_bindgen::prelude::*;
+use wasm_bindgen::JsCast;
 
 use std::cell::RefCell;
 use std::rc::Rc;
-use wasm_bindgen::JsCast;
+
 use web_sys::console;
 
 #[macro_use]
@@ -42,7 +34,6 @@ fn request_animation_frame(f: &Closure<dyn FnMut()>) {
         .request_animation_frame(f.as_ref().unchecked_ref())
         .expect("should register `requestAnimationFrame` OK");
 }
-
 
 // This function is automatically invoked after the wasm module is instantiated.
 #[wasm_bindgen(start)]
@@ -69,7 +60,6 @@ pub fn run() -> Result<(), JsValue> {
 
     // Keyboard and sprites test
     let mut screen = Screen::new_empty();
-    
     let mut grid = Canvas::new(12, "canvas");
 
     let keyboard = Keyboard::new();
@@ -95,7 +85,7 @@ pub fn run() -> Result<(), JsValue> {
         if previous_key != -1 {
             // Construct sprite slice
             let sprite_offset = screen::character_offset(previous_key as u16) as usize;
-            let sprite = &screen::CHIP8_FONT[sprite_offset..sprite_offset+5];
+            let sprite = &screen::CHIP8_FONT[sprite_offset..sprite_offset + 5];
             screen.write_sprite(0, 0, &sprite);
         }
 
@@ -103,7 +93,7 @@ pub fn run() -> Result<(), JsValue> {
             // Step 2, write new sprite
             // Construct sprite slice
             let sprite_offset = screen::character_offset(pressed_key as u16) as usize;
-            let sprite = &screen::CHIP8_FONT[sprite_offset..sprite_offset+5];
+            let sprite = &screen::CHIP8_FONT[sprite_offset..sprite_offset + 5];
             screen.write_sprite(0, 0, &sprite);
         }
         previous_key = pressed_key;

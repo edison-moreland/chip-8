@@ -10,4 +10,4 @@ extern "C" {
 
     #[wasm_bindgen(method, getter = keyPressed)]
     pub fn key_pressed(this: &Keyboard) -> i8;
-} 
+}

@@ -1,9 +1,7 @@
 use wasm_bindgen::prelude::*;
 use wasm_bindgen::JsCast;
-use web_sys::{
-    CanvasRenderingContext2d,
-    console
-};
+
+use web_sys::{console, CanvasRenderingContext2d};
 
 use js_sys;
 
@@ -37,7 +35,7 @@ impl Canvas {
         // Only supported video mode is 64x32 (for now)
         canvas.set_width(64 * scale);
         canvas.set_height(32 * scale);
-        
+
         // More hot garbage to get a context
         let context = canvas
             .get_context("2d")
@@ -71,7 +69,7 @@ impl Canvas {
     }
 
     fn draw_text(&self, line_num: usize, text: &String) {
-        let x = self.scale+(line_num as f64*self.scale);
+        let x = self.scale + (line_num as f64 * self.scale);
         match self.ctx.fill_text(text, 0.0, x) {
             Ok(_) => {}
             Err(err) => {
@@ -86,7 +84,7 @@ impl Canvas {
 
     pub fn draw_grid(&mut self, screen: &RawGrid) {
         self.clear_screen();
-        
+
         for (y, scanline) in screen.iter().enumerate() {
             let mut pixel_data = *scanline;
 
