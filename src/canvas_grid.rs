@@ -1,7 +1,11 @@
 use wasm_bindgen::prelude::*;
 use wasm_bindgen::JsCast;
-use web_sys::CanvasRenderingContext2d;
-use web_sys::console;
+use web_sys::{
+    CanvasRenderingContext2d,
+    console
+};
+
+use js_sys;
 
 // 32 rows of 64 bits, 1 bit = 1 pixel
 pub type RawGrid = [u64; 32];
@@ -67,7 +71,13 @@ impl Canvas {
     }
 
     fn draw_text(&self, line_num: usize, text: &String) {
-        self.ctx.fill_text(text, 0 as f64, self.scale+(line_num as f64*self.scale));
+        let x = self.scale+(line_num as f64*self.scale);
+        match self.ctx.fill_text(text, 0.0, x) {
+            Ok(_) => {}
+            Err(err) => {
+                console::error(&js_sys::Array::of1(&err));
+            }
+        }
     }
 
     pub fn debug_msg(&mut self, msg: String) {
