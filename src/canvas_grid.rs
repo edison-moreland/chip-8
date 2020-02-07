@@ -1,6 +1,7 @@
 use wasm_bindgen::prelude::*;
 use wasm_bindgen::JsCast;
 use web_sys::CanvasRenderingContext2d;
+use web_sys::console;
 
 // 32 rows of 64 bits, 1 bit = 1 pixel
 pub type RawGrid = [u64; 32];
@@ -15,6 +16,7 @@ pub type RawGrid = [u64; 32];
 pub struct Canvas {
     scale: f64,
     ctx: CanvasRenderingContext2d,
+    debug_text: Vec<String>,
 }
 
 impl Canvas {
@@ -41,18 +43,40 @@ impl Canvas {
             .unwrap();
 
         context.set_fill_style(&JsValue::from_str("rgb(0, 0, 0)"));
+        context.set_font(&format!("{}px monospace", scale));
 
         return Canvas {
             scale: scale as f64,
             ctx: context,
+            debug_text: Vec::new(),
         };
     }
 
-    pub fn draw_grid(&self, screen: &RawGrid) {
-        // Clear screen
+    fn clear_screen(&self) {
         self.ctx
-            .fill_rect(0.0, 0.0, 64.0 * self.scale, 32.0 * self.scale);
+            .clear_rect(0.0, 0.0, 64.0 * self.scale, 32.0 * self.scale);
+    }
 
+    fn draw_pixel(&self, x: usize, y: usize) {
+        self.ctx.fill_rect(
+            (x as f64) * self.scale,
+            (y as f64) * self.scale,
+            self.scale,
+            self.scale,
+        )
+    }
+
+    fn draw_text(&self, line_num: usize, text: &String) {
+        self.ctx.fill_text(text, 0 as f64, self.scale+(line_num as f64*self.scale));
+    }
+
+    pub fn debug_msg(&mut self, msg: String) {
+        self.debug_text.push(msg);
+    }
+
+    pub fn draw_grid(&mut self, screen: &RawGrid) {
+        self.clear_screen();
+        
         for (y, scanline) in screen.iter().enumerate() {
             let mut pixel_data = *scanline;
 
@@ -60,16 +84,15 @@ impl Canvas {
                 let is_pixel_set = pixel_data & 0x01;
                 pixel_data >>= 1;
 
-                if is_pixel_set == 0 {
-                    //console::log_1(&JsValue::from_str("b"));
-                    self.ctx.clear_rect(
-                        (x as f64) * self.scale,
-                        (y as f64) * self.scale,
-                        self.scale,
-                        self.scale,
-                    )
+                if is_pixel_set == 1 {
+                    self.draw_pixel(x, y);
                 }
             }
+        }
+
+        let debug_text: Vec<String> = self.debug_text.drain(..).collect();
+        for (i, text) in debug_text.iter().enumerate() {
+            self.draw_text(i, text);
         }
     }
 }

@@ -70,7 +70,7 @@ pub fn run() -> Result<(), JsValue> {
     // Keyboard and sprites test
     let mut screen = Screen::new_empty();
     
-    let grid = Canvas::new(12, "canvas");
+    let mut grid = Canvas::new(12, "canvas");
 
     let keyboard = Keyboard::new();
 
@@ -79,8 +79,14 @@ pub fn run() -> Result<(), JsValue> {
     let mut previous_key: i8 = -1;
     *g.borrow_mut() = Some(Closure::wrap(Box::new(move || {
         let pressed_key = keyboard.key_pressed();
+        grid.debug_msg(format!("Key Pressed: {}", pressed_key));
+
+        let ticks = timer.ticks_passed();
+        grid.debug_msg(format!("Ticks passed: {}", ticks));
+
         if pressed_key == previous_key {
             // Schedule another frame and bounce
+            grid.draw_grid(&screen.as_raw());
             request_animation_frame(f.borrow().as_ref().unwrap());
             return;
         }
@@ -99,16 +105,11 @@ pub fn run() -> Result<(), JsValue> {
             let sprite_offset = screen::character_offset(pressed_key as u16) as usize;
             let sprite = &screen::CHIP8_FONT[sprite_offset..sprite_offset+5];
             screen.write_sprite(0, 0, &sprite);
-            
-            // Flush to canvas
-            grid.draw_grid(&screen.as_raw());
         }
         previous_key = pressed_key;
 
-        let ticks = timer.ticks_passed();
-        console::log_1(&JsValue::from_f64(ticks as f64));
-
         // Schedule ourself for another requestAnimationFrame callback.
+        grid.draw_grid(&screen.as_raw());
         request_animation_frame(f.borrow().as_ref().unwrap());
     }) as Box<dyn FnMut()>));
 
