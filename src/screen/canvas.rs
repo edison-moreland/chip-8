@@ -1,9 +1,8 @@
 use wasm_bindgen::prelude::*;
 use wasm_bindgen::JsCast;
 
-use web_sys::{console, CanvasRenderingContext2d};
+use web_sys::CanvasRenderingContext2d;
 
-use js_sys;
 
 // 32 rows of 64 bits, 1 bit = 1 pixel
 pub type RawGrid = [u64; 32];
@@ -18,7 +17,6 @@ pub type RawGrid = [u64; 32];
 pub struct Canvas {
     scale: f64,
     ctx: CanvasRenderingContext2d,
-    debug_text: Vec<String>,
 }
 
 impl Canvas {
@@ -45,12 +43,10 @@ impl Canvas {
             .unwrap();
 
         context.set_fill_style(&JsValue::from_str("rgb(0, 0, 0)"));
-        context.set_font(&format!("{}px monospace", scale));
 
         return Canvas {
             scale: scale as f64,
             ctx: context,
-            debug_text: Vec::new(),
         };
     }
 
@@ -68,21 +64,7 @@ impl Canvas {
         )
     }
 
-    fn draw_text(&self, line_num: usize, text: &String) {
-        let x = self.scale + (line_num as f64 * self.scale);
-        match self.ctx.fill_text(text, 0.0, x) {
-            Ok(_) => {}
-            Err(err) => {
-                console::error(&js_sys::Array::of1(&err));
-            }
-        }
-    }
-
-    pub fn debug_msg(&mut self, msg: String) {
-        self.debug_text.push(msg);
-    }
-
-    pub fn draw_grid(&mut self, screen: &RawGrid) {
+    pub fn draw_grid(&self, screen: &RawGrid) {
         self.clear_screen();
 
         for (y, scanline) in screen.iter().enumerate() {
@@ -96,11 +78,6 @@ impl Canvas {
                     self.draw_pixel(x, y);
                 }
             }
-        }
-
-        let debug_text: Vec<String> = self.debug_text.drain(..).collect();
-        for (i, text) in debug_text.iter().enumerate() {
-            self.draw_text(i, text);
         }
     }
 }

@@ -1,3 +1,6 @@
+pub mod canvas;
+use crate::screen::canvas::Canvas;
+
 // Font built in to Chip-8. 16 characters(0-F), 5 bytes each
 // for a grand total of 80 bytes. This should be loaded into
 // the first 512 bytes of program memory before execution starts.
@@ -26,15 +29,19 @@ pub fn character_offset(character: u16) -> u16 {
 
 pub struct Screen {
     raw: [u64; 32],
+    canvas: Canvas,
 }
 
 impl Screen {
-    pub fn new_empty() -> Screen {
-        Screen { raw: [0; 32] }
+    pub fn new_empty(canvas: Canvas) -> Screen {
+        Screen { 
+            raw: [0; 32],
+            canvas: canvas
+        }
     }
 
-    pub fn as_raw(&self) -> [u64; 32] {
-        self.raw
+    pub fn flush(&self) {
+        self.canvas.draw_grid(&self.raw)
     }
 
     pub fn write_sprite(&mut self, mut x: usize, mut y: usize, sprite: &[u8]) -> bool {
