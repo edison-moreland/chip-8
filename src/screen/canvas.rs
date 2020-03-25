@@ -3,7 +3,6 @@ use wasm_bindgen::JsCast;
 
 use web_sys::CanvasRenderingContext2d;
 
-
 // 32 rows of 64 bits, 1 bit = 1 pixel
 pub type RawGrid = [u64; 32];
 

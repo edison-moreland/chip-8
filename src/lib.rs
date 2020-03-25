@@ -1,6 +1,6 @@
 mod screen;
-use crate::screen::Screen;
 use crate::screen::canvas::Canvas;
+use crate::screen::Screen;
 
 mod keyboard;
 use crate::keyboard::Keyboard;
@@ -50,7 +50,6 @@ pub fn run() -> Result<(), JsValue> {
     let f = Rc::new(RefCell::new(None));
     let g = f.clone();
     *g.borrow_mut() = Some(Closure::wrap(Box::new(move || {
-
         let pressed_key = keyboard.key_pressed();
 
         if pressed_key != previous_key {

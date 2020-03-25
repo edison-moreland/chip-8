@@ -34,9 +34,9 @@ pub struct Screen {
 
 impl Screen {
     pub fn new_empty(canvas: Canvas) -> Screen {
-        Screen { 
+        Screen {
             raw: [0; 32],
-            canvas: canvas
+            canvas: canvas,
         }
     }
 
