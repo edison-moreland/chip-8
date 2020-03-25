@@ -1,6 +1,5 @@
 mod screen;
-use crate::screen::canvas::Canvas;
-use crate::screen::Screen;
+use crate::screen::{Canvas, Screen};
 
 mod keyboard;
 use crate::keyboard::Keyboard;

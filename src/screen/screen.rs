@@ -1,4 +1,3 @@
-
 use super::canvas::Canvas;
 
 // Font built in to Chip-8. 16 characters(0-F), 5 bytes each
