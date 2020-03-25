@@ -4,6 +4,9 @@ use crate::screen::{Canvas, Screen};
 mod keyboard;
 use crate::keyboard::Keyboard;
 
+mod chip8;
+use crate::chip8::Chip8;
+
 // mod timer;
 // use crate::timer::Timer;
 
@@ -39,6 +42,8 @@ pub fn run() -> Result<(), JsValue> {
     console::log_1(&JsValue::from_f64(test_rom[0] as f64));
 
     //let timer = Timer::new(500.0);
+
+    let chip8 = Chip8::new();
 
     let keyboard = Keyboard::new();
     let mut previous_key: i8 = -1;
