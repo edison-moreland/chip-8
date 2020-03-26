@@ -22,11 +22,9 @@ Another Chip-8 implementation, woo! 🎉
   - [ ] Delay
 - [ ] System
   - [ ] Timers/Delays
-  - [ ] Emulation loop MVP
-  - [ ] Macros for generic instruction implementation
-  - [ ] Instruction set 25% defined
-  - [ ] Instruction set 50% defined
-  - [ ] Instruction set 90% defined
+  - [x] Instruction set 25% defined
+  - [x] Instruction set 50% defined
+  - [x] Instruction set 90% defined
 
 
 ## Purpose
@@ -41,6 +39,10 @@ Two reasons I'm building this:
 - [CHIP8; A CHIP-8 / SCHIP emulator - David Winter](http://vanbeveren.byethost13.com/stuff/CHIP8.pdf?i=1)
 - [HP48-Superchip - Chromatophore](https://github.com/Chromatophore/HP48-Superchip)
 - [(SUPER)CHIP 8 Secrets - Petr Kratina](https://github.com/AfBu/haxe-chip-8-emulator/wiki/(Super)CHIP-8-Secrets)
+
+
+## Built-In Roms
+- [test_opcode.ch8](https://github.com/corax89/chip8-test-rom)
 
 
 ## Quirks and Extensions
