@@ -17,7 +17,9 @@ pub enum Chip8Error {
 impl fmt::Display for Chip8Error {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match *self {
-            Chip8Error::InvalidInstruction(inst, addr) => write!(f, "InvalidInstruction {:#04X} at {:#04X}", inst, addr),
+            Chip8Error::InvalidInstruction(inst, addr) => {
+                write!(f, "InvalidInstruction {:#04X} at {:#04X}", inst, addr)
+            }
             Chip8Error::RomTooBig(size) => write!(f, "RomTooBig {} bytes", size),
             Chip8Error::InstructionNotImplemented(inst) => {
                 write!(f, "InstructionNotImplemented {}", inst)

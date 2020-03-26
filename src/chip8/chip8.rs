@@ -1,6 +1,6 @@
 use super::instructions::Instruction;
-use super::Chip8Error;
 use super::traits::Drawable;
+use super::Chip8Error;
 use std::convert::TryInto;
 
 use std::cell::RefCell;
@@ -101,8 +101,11 @@ impl Chip8 {
 
         return match Instruction::from_bytes(bytes) {
             Ok(inst) => Ok(inst),
-            Err(_) => Err(Chip8Error::InvalidInstruction(u16::from_be_bytes(bytes), self.program_counter-2))
-        }
+            Err(_) => Err(Chip8Error::InvalidInstruction(
+                u16::from_be_bytes(bytes),
+                self.program_counter - 2,
+            )),
+        };
     }
 
     fn load_rom(&mut self, start_address: usize, rom: &[u8]) -> Result<(), Chip8Error> {
@@ -153,7 +156,7 @@ impl Chip8 {
             }
             Instruction::SubroutineCall(addr) => {
                 self.stack.push(self.program_counter);
-                
+
                 self.program_counter = addr;
 
                 Ok(())
@@ -195,7 +198,7 @@ impl Chip8 {
                 let reg_start = self.i_reg as usize;
                 let reg_end = reg_start + (vx as usize);
                 let regs = &self.mem[reg_start..reg_end];
-                
+
                 self.v_reg[..vx as usize].clone_from_slice(regs);
 
                 Ok(())
@@ -209,7 +212,7 @@ impl Chip8 {
                 let sprite_start = self.i_reg as usize;
                 let sprite_end = sprite_start + (sprite_size as usize);
                 let sprite = &self.mem[sprite_start..sprite_end];
-                
+
                 let did_collide = self.screen.write_sprite(x, y, sprite);
                 self.v_reg[0xF] = did_collide as u8;
 
@@ -217,19 +220,20 @@ impl Chip8 {
 
                 Ok(())
             }
-            
+
             // Math
             Instruction::AddImm(vx, imm) => {
                 let (new_val, did_overflow) = self.v_reg[vx as usize].overflowing_add(imm);
-                
+
                 self.v_reg[vx as usize] = new_val;
                 self.v_reg[0xF] = did_overflow as u8;
 
                 Ok(())
             }
             Instruction::AddReg(vx, vy) => {
-                let (new_val, did_overflow) = self.v_reg[vx as usize].overflowing_add(self.v_reg[vy as usize]);
-                
+                let (new_val, did_overflow) =
+                    self.v_reg[vx as usize].overflowing_add(self.v_reg[vy as usize]);
+
                 self.v_reg[vx as usize] = new_val;
                 self.v_reg[0xF] = did_overflow as u8;
 
@@ -240,12 +244,12 @@ impl Chip8 {
                 let y = self.v_reg[vy as usize];
 
                 self.v_reg[0xF] = (y >= x) as u8;
-                
+
                 self.v_reg[vx as usize] = x.wrapping_sub(y);
 
                 Ok(())
             }
-            
+
             // Logic
             Instruction::OrReg(vx, vy) => {
                 self.v_reg[vx as usize] |= self.v_reg[vy as usize];
@@ -280,7 +284,7 @@ impl Chip8 {
 
                 Ok(())
             }
-            _ => Err(Chip8Error::InstructionNotImplemented(instruction))
+            _ => Err(Chip8Error::InstructionNotImplemented(instruction)),
         }
     }
 }

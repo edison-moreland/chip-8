@@ -16,7 +16,6 @@ impl Screen {
 }
 
 impl Drawable for Screen {
-
     fn flush(&self) {
         self.canvas.draw_grid(&self.raw)
     }

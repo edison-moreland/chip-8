@@ -5,8 +5,8 @@ mod keyboard;
 use crate::keyboard::Keyboard;
 
 mod chip8;
-use crate::chip8::Chip8;
 use crate::chip8::traits::Drawable;
+use crate::chip8::Chip8;
 
 // mod timer;
 // use crate::timer::Timer;
@@ -54,13 +54,10 @@ pub fn run() -> Result<(), JsValue> {
         }
     }
 
-    
-
     // https://rustwasm.github.io/wasm-bindgen/examples/request-animation-frame.html
     let f = Rc::new(RefCell::new(None));
     let g = f.clone();
     *g.borrow_mut() = Some(Closure::wrap(Box::new(move || {
-
         match chip8.step_execution() {
             Ok(_) => {}
             Err(e) => {
