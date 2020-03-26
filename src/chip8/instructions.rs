@@ -1,4 +1,3 @@
-use super::Chip8Error;
 use std::fmt;
 
 fn first_nibble(x: u8) -> u8 {
@@ -119,7 +118,7 @@ pub enum Instruction {
 }
 
 impl Instruction {
-    pub fn from_bytes(raw: [u8; 2]) -> Result<Instruction, Chip8Error> {
+    pub fn from_bytes(raw: [u8; 2]) -> Result<Instruction, ()> {
         // Instructions have arguments in a few standard places
         // 0nnn - 12 bit address
         let nnn = address(raw);
@@ -140,7 +139,7 @@ impl Instruction {
             0x0 => match raw[1] {
                 0xE0 => Ok(Instruction::ClearScreen()),
                 0xEE => Ok(Instruction::SubroutineReturn()),
-                _ => Err(Chip8Error::InvalidInstruction(u16::from_be_bytes(raw))),
+                _ => Err(()),
             },
             0x1 => Ok(Instruction::Jump(nnn)),
             0x2 => Ok(Instruction::SubroutineCall(nnn)),
@@ -159,7 +158,7 @@ impl Instruction {
                 0x6 => Ok(Instruction::ShiftRight(x, y)),
                 0x7 => Ok(Instruction::SubtractRegSwapped(x, y)),
                 0xE => Ok(Instruction::ShiftLeft(x, y)),
-                _ => Err(Chip8Error::InvalidInstruction(u16::from_be_bytes(raw))),
+                _ => Err(()),
             },
             0x9 => Ok(Instruction::SkipIfNotEqualReg(x, y)),
             0xA => Ok(Instruction::LoadAddress(nnn)),
@@ -169,7 +168,7 @@ impl Instruction {
             0xE => match raw[1] {
                 0x9E => Ok(Instruction::SkipIfPressed(x)),
                 0xA1 => Ok(Instruction::SkipIfNotPressed(x)),
-                _ => Err(Chip8Error::InvalidInstruction(u16::from_be_bytes(raw))),
+                _ => Err(()),
             },
             0xF => match raw[1] {
                 0x07 => Ok(Instruction::LoadRegDelay(x)),
@@ -181,9 +180,9 @@ impl Instruction {
                 0x33 => Ok(Instruction::LoadMemoryBcd(x)),
                 0x55 => Ok(Instruction::LoadMemoryRegisters(x)),
                 0x65 => Ok(Instruction::LoadRegistersMemory(x)),
-                _ => Err(Chip8Error::InvalidInstruction(u16::from_be_bytes(raw))),
+                _ => Err(()),
             },
-            _ => Err(Chip8Error::InvalidInstruction(u16::from_be_bytes(raw))),
+            _ => Err(()),
         };
     }
 }

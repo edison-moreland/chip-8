@@ -6,6 +6,7 @@ use crate::keyboard::Keyboard;
 
 mod chip8;
 use crate::chip8::Chip8;
+use crate::chip8::traits::Drawable;
 
 // mod timer;
 // use crate::timer::Timer;
@@ -42,9 +43,9 @@ pub fn run() -> Result<(), JsValue> {
         .expect("Could not get ROM")
         .into_owned();
 
-    //let timer = Timer::new(500.0);
+    let screen = Box::new(Screen::new_empty(Canvas::new(12, "canvas")));
 
-    let mut chip8 = Chip8::new();
+    let mut chip8 = Chip8::new(screen);
     match chip8.init_memory(&test_rom[..]) {
         Ok(_) => {}
         Err(e) => {
@@ -53,16 +54,12 @@ pub fn run() -> Result<(), JsValue> {
         }
     }
 
-    let keyboard = Keyboard::new();
-    let mut previous_key: i8 = -1;
-
-    let mut screen = Screen::new_empty(Canvas::new(12, "canvas"));
+    
 
     // https://rustwasm.github.io/wasm-bindgen/examples/request-animation-frame.html
     let f = Rc::new(RefCell::new(None));
     let g = f.clone();
     *g.borrow_mut() = Some(Closure::wrap(Box::new(move || {
-        let pressed_key = keyboard.key_pressed();
 
         match chip8.step_execution() {
             Ok(_) => {}
@@ -71,27 +68,6 @@ pub fn run() -> Result<(), JsValue> {
                 return;
             }
         };
-
-        if pressed_key != previous_key {
-            // Step 1, erase previous sprite
-            if previous_key != -1 {
-                // Construct sprite slice
-                let sprite_offset = screen::character_offset(previous_key as u16) as usize;
-                let sprite = &screen::CHIP8_FONT[sprite_offset..sprite_offset + 5];
-                screen.write_sprite(0, 0, &sprite);
-            }
-
-            // Step 2, write new sprite
-            if pressed_key != -1 {
-                // Construct sprite slice
-                let sprite_offset = screen::character_offset(pressed_key as u16) as usize;
-                let sprite = &screen::CHIP8_FONT[sprite_offset..sprite_offset + 5];
-                screen.write_sprite(0, 0, &sprite);
-            }
-            previous_key = pressed_key;
-        }
-
-        screen.flush();
 
         // Schedule ourself for another requestAnimationFrame callback.
         request_animation_frame(f.borrow().as_ref().unwrap());
