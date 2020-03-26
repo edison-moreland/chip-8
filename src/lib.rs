@@ -38,12 +38,20 @@ fn request_animation_frame(f: &Closure<dyn FnMut()>) {
 // This function is automatically invoked after the wasm module is instantiated.
 #[wasm_bindgen(start)]
 pub fn run() -> Result<(), JsValue> {
-    let test_rom = Asset::get("test_opcode.ch8").expect("Could not get ROM");
-    console::log_1(&JsValue::from_f64(test_rom[0] as f64));
+    let test_rom = Asset::get("test_opcode.ch8")
+        .expect("Could not get ROM")
+        .into_owned();
 
     //let timer = Timer::new(500.0);
 
-    let chip8 = Chip8::new();
+    let mut chip8 = Chip8::new();
+    match chip8.init_memory(&test_rom[..]) {
+        Ok(_) => {}
+        Err(e) => {
+            console::warn_1(&JsValue::from(e.to_string()));
+            return Err(JsValue::from(e.to_string()));
+        }
+    }
 
     let keyboard = Keyboard::new();
     let mut previous_key: i8 = -1;
@@ -55,6 +63,14 @@ pub fn run() -> Result<(), JsValue> {
     let g = f.clone();
     *g.borrow_mut() = Some(Closure::wrap(Box::new(move || {
         let pressed_key = keyboard.key_pressed();
+
+        match chip8.step_execution() {
+            Ok(_) => {}
+            Err(e) => {
+                console::warn_1(&JsValue::from(e.to_string()));
+                return;
+            }
+        };
 
         if pressed_key != previous_key {
             // Step 1, erase previous sprite
