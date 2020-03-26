@@ -26,8 +26,9 @@ wasm-bindgen = "0.2.45"
 # in debug mode.
 console_error_panic_hook = "0.1.5"
 
-
 js-sys = "0.3.22"
+
+url = "2.1.1"
 
 
 # Used to embed binaries during compilation
@@ -48,7 +49,8 @@ features = [
     "Document",
     "Element",
     "HtmlCanvasElement",
-    "CanvasRenderingContext2d"
+    "CanvasRenderingContext2d",
+    "Location"
 ]
 
 # These crates are used for running unit tests.

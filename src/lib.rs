@@ -19,6 +19,10 @@ use std::rc::Rc;
 
 use web_sys::console;
 
+use std::collections::HashMap;
+
+use url::Url;
+
 #[macro_use]
 extern crate rust_embed;
 
@@ -36,10 +40,21 @@ fn request_animation_frame(f: &Closure<dyn FnMut()>) {
         .expect("should register `requestAnimationFrame` OK");
 }
 
+fn get_rom_name() -> String {
+    // get rom name from url query defaulting to "test_opcode"
+    let parsed_url = Url::parse(&window().location().href().unwrap()).expect("could not parse url");
+
+    let query: HashMap<String, String> = parsed_url.query_pairs().into_owned().collect();
+
+    let rom_name = query.get("rom").unwrap_or(&String::from("test_opcode/test_opcode")).to_owned();
+
+    return rom_name
+}
+
 // This function is automatically invoked after the wasm module is instantiated.
 #[wasm_bindgen(start)]
 pub fn run() -> Result<(), JsValue> {
-    let test_rom = Asset::get("test_opcode.ch8")
+    let test_rom = Asset::get(&format!("{}.ch8", get_rom_name()))
         .expect("Could not get ROM")
         .into_owned();
 

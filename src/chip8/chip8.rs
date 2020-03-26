@@ -6,6 +6,10 @@ use std::convert::TryInto;
 use std::cell::RefCell;
 use std::rc::Rc;
 
+use wasm_bindgen::prelude::*;
+use wasm_bindgen::JsCast;
+use web_sys::console;
+
 // Font built in to Chip-8. 16 characters(0-F), 5 bytes each
 // for a grand total of 80 bytes. This should be loaded into
 // the first 512 bytes of program memory before execution starts.
@@ -199,7 +203,18 @@ impl Chip8 {
                 let reg_end = reg_start + (vx as usize);
                 let regs = &self.mem[reg_start..reg_end];
 
+                console::log_1(&JsValue::from(format!("{:?}", regs.len())));
+
                 self.v_reg[..vx as usize].clone_from_slice(regs);
+
+                Ok(())
+            }
+            Instruction::LoadMemoryBcd(vx) => {
+                let val = self.v_reg[vx as usize];
+
+                self.mem[(self.i_reg as usize)] = val % 10; // hundreds
+                self.mem[(self.i_reg as usize) + 1] = (val / 10) % 10; // tens
+                self.mem[(self.i_reg as usize) + 2] = (val / 100) % 10; // ones
 
                 Ok(())
             }

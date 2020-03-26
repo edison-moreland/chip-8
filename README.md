@@ -42,7 +42,9 @@ Two reasons I'm building this:
 
 
 ## Built-In Roms
-- [test_opcode.ch8](https://github.com/corax89/chip8-test-rom)
+- [test_opcode.ch8: corax89](https://github.com/corax89/chip8-test-rom)
+- [Chip-8 Program Pack](https://github.com/dmatlack/chip8/tree/master/roms)
+  - Various authors, see `static/roms/chip8_program_pack/README.md`
 
 
 ## Quirks and Extensions
