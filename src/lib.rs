@@ -46,9 +46,12 @@ fn get_rom_name() -> String {
 
     let query: HashMap<String, String> = parsed_url.query_pairs().into_owned().collect();
 
-    let rom_name = query.get("rom").unwrap_or(&String::from("test_opcode/test_opcode")).to_owned();
+    let rom_name = query
+        .get("rom")
+        .unwrap_or(&String::from("test_opcode/test_opcode"))
+        .to_owned();
 
-    return rom_name
+    return rom_name;
 }
 
 // This function is automatically invoked after the wasm module is instantiated.
