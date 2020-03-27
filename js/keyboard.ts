@@ -2,7 +2,7 @@
 // https://codepen.io/edison-moreland/pen/PowOGqO
 type Chip8Key = -1|0|1|2|3|4|5|6|7|8|9|10|11|12|13|14|15
 
-export class Keyboard {
+export class KeyboardListener {
     keyMap: Map<string, Chip8Key>;
     keyPressed: Chip8Key;
 

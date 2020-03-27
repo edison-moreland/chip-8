@@ -30,6 +30,11 @@ js-sys = "0.3.22"
 
 url = "2.1.1"
 
+[dependencies.rand]
+version = "0.7.3"
+features = [
+    "wasm-bindgen"
+]
 
 # Used to embed binaries during compilation
 [dependencies.rust-embed]

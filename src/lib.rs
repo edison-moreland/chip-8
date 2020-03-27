@@ -5,7 +5,6 @@ mod keyboard;
 use crate::keyboard::Keyboard;
 
 mod chip8;
-use crate::chip8::traits::Drawable;
 use crate::chip8::Chip8;
 
 // mod timer;
@@ -13,15 +12,17 @@ use crate::chip8::Chip8;
 
 use wasm_bindgen::prelude::*;
 use wasm_bindgen::JsCast;
+use web_sys::console;
 
 use std::cell::RefCell;
 use std::rc::Rc;
 
-use web_sys::console;
-
 use std::collections::HashMap;
 
 use url::Url;
+
+extern crate console_error_panic_hook;
+use std::panic;
 
 #[macro_use]
 extern crate rust_embed;
@@ -57,14 +58,18 @@ fn get_rom_name() -> String {
 // This function is automatically invoked after the wasm module is instantiated.
 #[wasm_bindgen(start)]
 pub fn run() -> Result<(), JsValue> {
-    let test_rom = Asset::get(&format!("{}.ch8", get_rom_name()))
+    panic::set_hook(Box::new(console_error_panic_hook::hook));
+
+    let rom = Asset::get(&format!("{}.ch8", get_rom_name()))
         .expect("Could not get ROM")
         .into_owned();
 
+    let keyboard = Box::new(Keyboard::new());
+
     let screen = Box::new(Screen::new_empty(Canvas::new(12, "canvas")));
 
-    let mut chip8 = Chip8::new(screen);
-    match chip8.init_memory(&test_rom[..]) {
+    let mut chip8 = Chip8::new(screen, keyboard);
+    match chip8.init_memory(&rom[..]) {
         Ok(_) => {}
         Err(e) => {
             console::warn_1(&JsValue::from(e.to_string()));

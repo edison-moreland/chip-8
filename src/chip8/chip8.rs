@@ -1,14 +1,9 @@
 use super::instructions::Instruction;
-use super::traits::Drawable;
+use super::traits::{Drawable, HexKeyboard};
 use super::Chip8Error;
 use std::convert::TryInto;
 
-use std::cell::RefCell;
-use std::rc::Rc;
-
-use wasm_bindgen::prelude::*;
-use wasm_bindgen::JsCast;
-use web_sys::console;
+use rand::random;
 
 // Font built in to Chip-8. 16 characters(0-F), 5 bytes each
 // for a grand total of 80 bytes. This should be loaded into
@@ -32,7 +27,7 @@ pub const CHIP8_FONT: [u8; 5 * 16] = [
     0xF0, 0x80, 0xF0, 0x80, 0x80, // F
 ];
 
-pub fn character_offset(character: u16) -> u16 {
+pub fn character_offset(character: u8) -> u16 {
     (character as u16) * 5
 }
 
@@ -60,10 +55,14 @@ pub struct Chip8 {
     stack: Vec<u16>,
 
     screen: Box<dyn Drawable>,
+    keyboard: Box<dyn HexKeyboard>,
+
+    waiting_for_key: bool,
+    key_reg: usize,
 }
 
 impl Chip8 {
-    pub fn new(screen: Box<dyn Drawable>) -> Self {
+    pub fn new(screen: Box<dyn Drawable>, keyboard: Box<dyn HexKeyboard>) -> Self {
         Self {
             mem: [0; MEM_SIZE],
 
@@ -77,6 +76,10 @@ impl Chip8 {
             stack: Vec::with_capacity(STACK_SIZE),
 
             screen: screen,
+            keyboard: keyboard,
+
+            waiting_for_key: false,
+            key_reg: 0x00,
         }
     }
 
@@ -90,6 +93,16 @@ impl Chip8 {
 
     pub fn step_execution(&mut self) -> Result<(), Chip8Error> {
         // todo: do some timer stuff
+        if self.waiting_for_key {
+            match self.keyboard.pressed_key() {
+                Some(key) => {
+                    self.v_reg[self.key_reg] = key;
+                    self.waiting_for_key = false;
+                    self.key_reg = 0x00;
+                }
+                None => return Ok(()),
+            }
+        }
 
         let instruction = self.next_instruction()?;
         self.execute_instruction(instruction)?;
@@ -172,6 +185,22 @@ impl Chip8 {
 
                 Ok(())
             }
+            Instruction::SkipIfPressed(vx) => {
+                let key = self.v_reg[vx as usize];
+                if self.keyboard.pressed_key() == Some(key) {
+                    self.program_counter += 2
+                }
+
+                Ok(())
+            }
+            Instruction::SkipIfNotPressed(vx) => {
+                let key = self.v_reg[vx as usize];
+                if self.keyboard.pressed_key() != Some(key) {
+                    self.program_counter += 2
+                }
+
+                Ok(())
+            }
 
             // Memory
             Instruction::LoadRegReg(vx, vy) => {
@@ -189,11 +218,11 @@ impl Chip8 {
             }
             Instruction::LoadMemoryRegisters(vx) => {
                 // Dumps registers v0..vx to memory starting at i
-                let regs = &self.v_reg[..vx as usize];
+                let regs = &self.v_reg[..=vx as usize];
 
                 let reg_start = self.i_reg as usize;
                 let reg_end = reg_start + (vx as usize);
-                self.mem[reg_start..reg_end].clone_from_slice(regs);
+                self.mem[reg_start..=reg_end].clone_from_slice(regs);
 
                 Ok(())
             }
@@ -201,20 +230,31 @@ impl Chip8 {
                 // Loads registers v0..vx from memory starting at i
                 let reg_start = self.i_reg as usize;
                 let reg_end = reg_start + (vx as usize);
-                let regs = &self.mem[reg_start..reg_end];
+                let regs = &self.mem[reg_start..=reg_end];
 
-                console::log_1(&JsValue::from(format!("{:?}", regs.len())));
-
-                self.v_reg[..vx as usize].clone_from_slice(regs);
+                self.v_reg[..=vx as usize].clone_from_slice(regs);
 
                 Ok(())
             }
             Instruction::LoadMemoryBcd(vx) => {
                 let val = self.v_reg[vx as usize];
 
-                self.mem[(self.i_reg as usize)] = val % 10; // hundreds
-                self.mem[(self.i_reg as usize) + 1] = (val / 10) % 10; // tens
-                self.mem[(self.i_reg as usize) + 2] = (val / 100) % 10; // ones
+                let bcd_start = self.i_reg as usize;
+                self.mem[bcd_start + 2] = val % 10; // hundreds
+                self.mem[bcd_start + 1] = (val / 10) % 10; // tens
+                self.mem[bcd_start + 0] = (val / 100) % 10; // ones
+
+                Ok(())
+            }
+            Instruction::LoadAddressDigit(vx) => {
+                let val = self.v_reg[vx as usize];
+                self.i_reg = (FONT_START as u16) + character_offset(val);
+
+                Ok(())
+            }
+            Instruction::LoadKey(vx) => {
+                self.waiting_for_key = true;
+                self.key_reg = vx as usize;
 
                 Ok(())
             }
@@ -231,6 +271,12 @@ impl Chip8 {
                 let did_collide = self.screen.write_sprite(x, y, sprite);
                 self.v_reg[0xF] = did_collide as u8;
 
+                self.screen.flush();
+
+                Ok(())
+            }
+            Instruction::ClearScreen() => {
+                self.screen.clear();
                 self.screen.flush();
 
                 Ok(())
@@ -254,6 +300,11 @@ impl Chip8 {
 
                 Ok(())
             }
+            Instruction::AddAddress(vx) => {
+                self.i_reg += self.v_reg[vx as usize] as u16;
+
+                Ok(())
+            }
             Instruction::SubtractReg(vx, vy) => {
                 let x = self.v_reg[vx as usize];
                 let y = self.v_reg[vy as usize];
@@ -262,6 +313,10 @@ impl Chip8 {
 
                 self.v_reg[vx as usize] = x.wrapping_sub(y);
 
+                Ok(())
+            }
+            Instruction::Random(vx, byte) => {
+                self.v_reg[vx as usize] = random::<u8>() & byte;
                 Ok(())
             }
 

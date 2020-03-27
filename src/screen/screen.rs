@@ -20,6 +20,10 @@ impl Drawable for Screen {
         self.canvas.draw_grid(&self.raw)
     }
 
+    fn clear(&mut self) {
+        self.raw = [0; 32];
+    }
+
     fn write_sprite(&mut self, mut x: usize, mut y: usize, sprite: &[u8]) -> bool {
         // Not sure if this is the standard way to handle drawing off screen.
         // The only reference I've seen to it is in Mikolay's Chip-8 reference.
