@@ -3,29 +3,17 @@
 # Chip-8!
 Another Chip-8 implementation, woo! 🎉
 
-
 ## ToDo
 - [ ] CI/CD
-  - [ ] Pick a CI
-  - [ ] List tools needed to build
-  - [ ] Reproducable builds on push
+  - [ ] Builds on push
   - [ ] Serve build artifacts (github pages?)  
 - [ ] Display
-  - [x] Divide canvas into "pixels"
-    - [ ] With support for multiple resolutions
-  - [x] Draw to canvas from Rust
-  - [x] Draw sprites to canvas
-    - [x] With collision detection
-- [x] Keyboard
-- [X] Timers
-  - [ ] Sounds (w/buzzer)
-  - [ ] Delay
-- [ ] System
-  - [ ] Timers/Delays
-  - [x] Instruction set 25% defined
-  - [x] Instruction set 50% defined
-  - [x] Instruction set 90% defined
-
+  - [ ] Support for multiple resolutions
+- [ ] Sounds (w/buzzer)
+- [ ] Fix bugs
+  - [ ] Intense flickering on some roms
+  - [ ] Drawing on the very edge of the screen causes panic
+  - [ ] Some roms just don't do anything
 
 ## Purpose
 Two reasons I'm building this:
@@ -47,13 +35,9 @@ Two reasons I'm building this:
   - Various authors, see `static/roms/chip8_program_pack/README.md`
 
 
-## Quirks and Extensions
-There are a lot of popular Chip-8 implementations and since there is no concrete spec for the Chip-8 system, each implementation has it's own quirks and extensions. I'll support what I can based on time/difficulty and guard these with feature flags.
-
-
 # Building
 ## Tools Required
-// TODO
+// TODO, sorry :/
 
 
 ## Getting Started
