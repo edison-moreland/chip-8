@@ -10,7 +10,8 @@
 // timer and sound timer respectively. When a timer is set to a non-zero value, 
 // it will count down at a rate of sixty hertz until zero is reached. 
 
-export class Timer {
+// This has a bad name
+export class JSCountdown {
     period: number
     last_time: number
 
@@ -20,7 +21,7 @@ export class Timer {
         this.last_time = Date.now();
     }
     
-    ticksPassed(): number {
+    cyclesPassed(): number {
         // Calculate the number of ticks since last called
         const now = Date.now();
         const between_time = now - this.last_time;

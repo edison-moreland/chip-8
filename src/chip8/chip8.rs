@@ -1,5 +1,5 @@
 use super::instructions::Instruction;
-use super::traits::{Drawable, HexKeyboard};
+use super::traits::{Drawable, HexKeyboard, Timer};
 use super::Chip8Error;
 use std::convert::TryInto;
 
@@ -56,13 +56,18 @@ pub struct Chip8 {
 
     screen: Box<dyn Drawable>,
     keyboard: Box<dyn HexKeyboard>,
+    timer: Box<dyn Timer>,
 
     waiting_for_key: bool,
     key_reg: usize,
 }
 
 impl Chip8 {
-    pub fn new(screen: Box<dyn Drawable>, keyboard: Box<dyn HexKeyboard>) -> Self {
+    pub fn new(
+        screen: Box<dyn Drawable>,
+        keyboard: Box<dyn HexKeyboard>,
+        timer: Box<dyn Timer>,
+    ) -> Self {
         Self {
             mem: [0; MEM_SIZE],
 
@@ -77,6 +82,7 @@ impl Chip8 {
 
             screen: screen,
             keyboard: keyboard,
+            timer: timer,
 
             waiting_for_key: false,
             key_reg: 0x00,
@@ -87,6 +93,17 @@ impl Chip8 {
         self.load_rom(FONT_START, &CHIP8_FONT)?;
 
         self.load_rom(PROGRAM_START, rom)?;
+
+        return Ok(());
+    }
+
+    fn load_rom(&mut self, start_address: usize, rom: &[u8]) -> Result<(), Chip8Error> {
+        let end_address = start_address + rom.len();
+        if end_address >= MEM_SIZE {
+            return Err(Chip8Error::RomTooBig(rom.len()));
+        }
+
+        self.mem[start_address..end_address].clone_from_slice(rom);
 
         return Ok(());
     }
@@ -104,10 +121,26 @@ impl Chip8 {
             }
         }
 
+        self.decrement_timers();
+
         let instruction = self.next_instruction()?;
         self.execute_instruction(instruction)?;
 
         return Ok(());
+    }
+
+    fn decrement_timers(&mut self) {
+        let decrement_amount = self.timer.cycles_passed();
+
+        self.sound_reg = match self.sound_reg.checked_sub(decrement_amount) {
+            Some(newval) => newval,
+            None => 0,
+        };
+
+        self.delay_reg = match self.delay_reg.checked_sub(decrement_amount) {
+            Some(newval) => newval,
+            None => 0,
+        };
     }
 
     fn next_instruction(&mut self) -> Result<Instruction, Chip8Error> {
@@ -123,17 +156,6 @@ impl Chip8 {
                 self.program_counter - 2,
             )),
         };
-    }
-
-    fn load_rom(&mut self, start_address: usize, rom: &[u8]) -> Result<(), Chip8Error> {
-        let end_address = start_address + rom.len();
-        if end_address >= MEM_SIZE {
-            return Err(Chip8Error::RomTooBig(rom.len()));
-        }
-
-        self.mem[start_address..end_address].clone_from_slice(rom);
-
-        return Ok(());
     }
 
     fn execute_instruction(&mut self, instruction: Instruction) -> Result<(), Chip8Error> {
@@ -203,6 +225,21 @@ impl Chip8 {
             }
 
             // Memory
+            Instruction::LoadDelayReg(vx) => {
+                self.delay_reg = self.v_reg[vx as usize];
+
+                Ok(())
+            }
+            Instruction::LoadRegDelay(vx) => {
+                self.v_reg[vx as usize] = self.delay_reg;
+
+                Ok(())
+            }
+            Instruction::LoadSoundReg(vx) => {
+                self.sound_reg = self.v_reg[vx as usize];
+
+                Ok(())
+            }
             Instruction::LoadRegReg(vx, vy) => {
                 self.v_reg[vx as usize] = self.v_reg[vy as usize];
 

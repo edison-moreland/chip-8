@@ -7,8 +7,8 @@ use crate::keyboard::Keyboard;
 mod chip8;
 use crate::chip8::Chip8;
 
-// mod timer;
-// use crate::timer::Timer;
+mod countdown;
+use crate::countdown::Countdown;
 
 use wasm_bindgen::prelude::*;
 use wasm_bindgen::JsCast;
@@ -64,11 +64,13 @@ pub fn run() -> Result<(), JsValue> {
         .expect("Could not get ROM")
         .into_owned();
 
+    let timer = Box::new(Countdown::new());
+
     let keyboard = Box::new(Keyboard::new());
 
     let screen = Box::new(Screen::new_empty(Canvas::new(12, "canvas")));
 
-    let mut chip8 = Chip8::new(screen, keyboard);
+    let mut chip8 = Chip8::new(screen, keyboard, timer);
     match chip8.init_memory(&rom[..]) {
         Ok(_) => {}
         Err(e) => {

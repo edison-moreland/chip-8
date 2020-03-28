@@ -9,3 +9,7 @@ pub trait Drawable {
 pub trait HexKeyboard {
     fn pressed_key(&self) -> Option<u8>;
 }
+
+pub trait Timer {
+    fn cycles_passed(&self) -> u8;
+}
