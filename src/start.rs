@@ -42,13 +42,19 @@ pub fn run_emulator(rom: &[u8]) -> Result<(), String> {
     let f = Rc::new(RefCell::new(None));
     let g = f.clone();
     *g.borrow_mut() = Some(Closure::wrap(Box::new(move || {
-        match chip8.step_execution() {
-            Ok(_) => {}
-            Err(e) => {
-                console::warn_1(&JsValue::from(e.to_string()));
-                return;
-            }
-        };
+        // assuming browser calls request animation frame ~60 times per second to
+        // get a target speed of 500Hz we have to step execution 500/60 = ~8 times
+        // TODO: measure time between animation frames and dynamically adjust
+        // steps per frame to reach a target frame rate
+        for _ in 0..9 {
+            match chip8.step_execution() {
+                Ok(_) => {}
+                Err(e) => {
+                    console::warn_1(&JsValue::from(e.to_string()));
+                    return;
+                }
+            };
+        }
 
         // Schedule ourself for another requestAnimationFrame callback.
         request_animation_frame(f.borrow().as_ref().unwrap());
