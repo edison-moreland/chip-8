@@ -3,6 +3,11 @@
       "noImplicitAny": true,
       "module": "es6",
       "target": "es6",
-      "strict": true
+      "strict": true,
+      "checkJs": true,
+      "forceConsistentCasingInFileNames": true,
+      "noImplicitReturns": true,
+      "noUnusedLocals": true,
+      "noUnusedParameters": true
     }
   }
