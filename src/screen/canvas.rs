@@ -43,6 +43,7 @@ impl Canvas {
             .unwrap();
 
         context.set_fill_style(&JsValue::from_str("rgb(0, 0, 0)"));
+        context.set_global_composite_operation("overlay").expect("Failed to set composite operation, this shouldn't happen");
 
         return Canvas {
             scale_x: scale_x as f64,
