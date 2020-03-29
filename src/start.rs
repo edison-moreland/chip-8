@@ -29,7 +29,7 @@ pub fn run_emulator(rom: &[u8]) -> Result<(), String> {
 
     let keyboard = Box::new(Keyboard::new());
 
-    let screen = Box::new(Screen::new_empty(Canvas::new(12, "canvas")));
+    let screen = Box::new(Screen::new_empty(Canvas::new("canvas")));
 
     let mut chip8 = Chip8::new(screen, keyboard, timer);
     match chip8.init_memory(rom) {

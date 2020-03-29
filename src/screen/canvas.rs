@@ -14,12 +14,13 @@ pub type RawGrid = [u64; 32];
 // The JS version still lives in code pen, if curious:
 // https://codepen.io/edison-moreland/pen/PowKeLv
 pub struct Canvas {
-    scale: f64,
+    scale_x: f64,
+    scale_y: f64,
     ctx: CanvasRenderingContext2d,
 }
 
 impl Canvas {
-    pub fn new(scale: u32, canvas_id: &str) -> Canvas {
+    pub fn new(canvas_id: &str) -> Canvas {
         // Some hot garbage to get the canvas element
         let document = web_sys::window().unwrap().document().unwrap();
         let canvas = document.get_element_by_id(canvas_id).unwrap();
@@ -28,10 +29,10 @@ impl Canvas {
             .map_err(|_| ())
             .unwrap();
 
-        // Make sure canvas is the right size
+        // Adjust drawing to canvas size
         // Only supported video mode is 64x32 (for now)
-        canvas.set_width(64 * scale);
-        canvas.set_height(32 * scale);
+        let scale_x = canvas.width() / 64;
+        let scale_y = canvas.height() / 32;
 
         // More hot garbage to get a context
         let context = canvas
@@ -44,22 +45,23 @@ impl Canvas {
         context.set_fill_style(&JsValue::from_str("rgb(0, 0, 0)"));
 
         return Canvas {
-            scale: scale as f64,
+            scale_x: scale_x as f64,
+            scale_y: scale_y as f64,
             ctx: context,
         };
     }
 
     fn clear_screen(&self) {
         self.ctx
-            .clear_rect(0.0, 0.0, 64.0 * self.scale, 32.0 * self.scale);
+            .clear_rect(0.0, 0.0, 64.0 * self.scale_x, 32.0 * self.scale_y);
     }
 
     fn draw_pixel(&self, x: usize, y: usize) {
         self.ctx.fill_rect(
-            (x as f64) * self.scale,
-            (y as f64) * self.scale,
-            self.scale,
-            self.scale,
+            (x as f64) * self.scale_x,
+            (y as f64) * self.scale_y,
+            self.scale_x,
+            self.scale_y,
         )
     }
 
